@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 #include "resource.h"
+#include "version.h"
+#include <winver.h>
 
 STRINGTABLE
 BEGIN
-    IDS_NOTIFICATION_TOOLTIP "Roar"
+    IDS_NOTIFICATION_TOOLTIP TOOLTIP
 END
 
 IDI_NOTIFICATION_ICON ICON "tray.ico"
@@ -27,5 +29,38 @@ BEGIN
     POPUP ""
     BEGIN
         MENUITEM "E&xit", IDM_EXIT
+    END
+END
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION PRODUCT_VERSION
+PRODUCTVERSION PRODUCT_VERSION
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+    FILEFLAGS (VS_FF_PRIVATEBUILD|VS_FF_PRERELEASE|VS_FF_DEBUG)
+#else
+    FILEFLAGS 0x0L
+#endif
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_APP
+FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "openclosed.dev"
+            VALUE "FileDescription", "Roar executable"
+            VALUE "FileVersion", PRODUCT_VERSION_STR
+            VALUE "LegalCopyright", "Copyright 2024 the original author or authors."
+            VALUE "InternalName", "roar.exe"
+            VALUE "OriginalFilename", "roar.exe"
+            VALUE "ProductName", "Roar"
+            VALUE "ProductVersion", PRODUCT_VERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
     END
 END

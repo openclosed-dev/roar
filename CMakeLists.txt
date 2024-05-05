@@ -9,6 +9,8 @@ include(FetchContent)
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
+configure_file(src/version.h.in version.h)
+
 set(SOURCES
     src/Application.cpp
     src/SoundPack.cpp
@@ -41,6 +43,10 @@ target_precompile_headers(roar PRIVATE
     <fstream>
     <xaudio2.h>
     <nlohmann/json.hpp>
+)
+
+target_include_directories(roar PRIVATE
+    "${PROJECT_BINARY_DIR}"
 )
 
 target_link_libraries(roar PRIVATE
