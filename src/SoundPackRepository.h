@@ -21,11 +21,13 @@ class WaveResource;
 class SoundPackRepository {
 private:
 
-    std::set<std::filesystem::path> dirs;
+    using PathSet = std::set<std::filesystem::path>;
+
+    PathSet dirs;
 
 public:
 
-    SoundPackRepository(const std::set<std::filesystem::path>& dirs);
+    SoundPackRepository(const PathSet& dirs);
 
     ~SoundPackRepository();
 

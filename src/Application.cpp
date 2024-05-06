@@ -19,13 +19,13 @@
 
 Application::Application(HINSTANCE module)
 :   module(module),
-    repository(getDirectories(module)) {
-
+    repository(getDirectories(module))
+{
     Window::registerClass(module);
 }
 
-int Application::run(const wchar_t* commandLine, int show) {
-
+int Application::run(const wchar_t* commandLine, int show)
+{
     HRESULT hr = ::CoInitializeEx( nullptr, COINIT_MULTITHREADED );
     if (FAILED(hr))
         return 1;
@@ -50,8 +50,8 @@ int Application::run(const wchar_t* commandLine, int show) {
     return 0;
 }
 
-SoundPlayer* Application::createSoundPlayer(SoundPack* soundPack) {
-
+SoundPlayer* Application::createSoundPlayer(SoundPack* soundPack)
+{
     SoundPlayer* soundPlayer = SoundPlayer::create();
     if (soundPlayer != nullptr) {
         soundPlayer->setSoundPack(soundPack);
@@ -60,7 +60,8 @@ SoundPlayer* Application::createSoundPlayer(SoundPack* soundPack) {
     return soundPlayer;
 }
 
-void Application::loop() {
+void Application::loop()
+{
     MSG msg{};
     while (::GetMessage(&msg, NULL, 0, 0)) {
         ::TranslateMessage(&msg);
@@ -68,22 +69,26 @@ void Application::loop() {
     }
 }
 
-std::set<std::filesystem::path> Application::getDirectories(HINSTANCE module) {
-    std::set<std::filesystem::path> dirs;
+Application::PathSet Application::getDirectories(HINSTANCE module)
+{
+    PathSet dirs;
     dirs.insert(std::filesystem::current_path());
-    dirs.insert(getApplicationDirectory(module));
+    dirs.insert(getHomeDirectory(module));
     return dirs;
 }
 
-std::filesystem::path Application::getApplicationDirectory(HINSTANCE module) {
+Application::Path Application::getHomeDirectory(HINSTANCE module)
+{
     wchar_t modulePath[MAX_PATH + 1]{};
     ::GetModuleFileName(module, modulePath, MAX_PATH + 1);
 
-    std::filesystem::path path(modulePath);
-    return path.parent_path();
+    Path path(modulePath);
+    Path bin = path.parent_path();
+    return bin.parent_path();
 }
 
-int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, wchar_t* commandLine, int show) {
+int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, wchar_t* commandLine, int show)
+{
     Application app(hInstance);
     return app.run(commandLine, show);
 }

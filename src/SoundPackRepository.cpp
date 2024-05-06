@@ -36,8 +36,8 @@ private:
     SoundClipMap* modifyKeyMap(SoundClipMap& map);
 };
 
-SoundPack* SoundPackLoader::load(const fs::path& dir) {
-
+SoundPack* SoundPackLoader::load(const fs::path& dir)
+{
     fs::path configPath = dir / L"config.json";
 
     std::ifstream stream(configPath);
@@ -49,8 +49,8 @@ SoundPack* SoundPackLoader::load(const fs::path& dir) {
     return new SoundPack(resource, map);
 }
 
-std::string SoundPackLoader::getSound(json& config) {
-
+std::string SoundPackLoader::getSound(json& config)
+{
     if (config.contains("sound")) {
         auto property = config.at("sound");
         if (property.is_string()) {
@@ -63,8 +63,8 @@ std::string SoundPackLoader::getSound(json& config) {
     return "sound.wav";
 }
 
-WaveResource* SoundPackLoader::loadWaveResource(const fs::path& path) {
-
+WaveResource* SoundPackLoader::loadWaveResource(const fs::path& path)
+{
     WaveResource* resource = nullptr;
 
     WaveResourceReader* reader = WaveResourceReader::fromFile(path.c_str());
@@ -76,8 +76,8 @@ WaveResource* SoundPackLoader::loadWaveResource(const fs::path& path) {
     return resource;
 }
 
-SoundClipMap* SoundPackLoader::buildKeyMap(json& config, WaveResource* resource) {
-
+SoundClipMap* SoundPackLoader::buildKeyMap(json& config, WaveResource* resource)
+{
     auto map = new SoundClipMap();
 
     if (!config.contains("keys")) {
@@ -104,7 +104,8 @@ SoundClipMap* SoundPackLoader::buildKeyMap(json& config, WaveResource* resource)
     return modifyKeyMap(*map);
 }
 
-SoundClipMap* SoundPackLoader::modifyKeyMap(SoundClipMap& map) {
+SoundClipMap* SoundPackLoader::modifyKeyMap(SoundClipMap& map)
+{
     map[0xe01d] = map[3613]; // right ctrl
     map[0xe037] = map[3639]; // print screen
     map[0xe038] = map[3640]; // right alt
@@ -120,20 +121,22 @@ SoundClipMap* SoundPackLoader::modifyKeyMap(SoundClipMap& map) {
     return &map;
 }
 
-SoundPackRepository::SoundPackRepository(
-    const std::set<std::filesystem::path>& dirs)
-:   dirs(dirs) {
+SoundPackRepository::SoundPackRepository(const PathSet& dirs)
+:   dirs(dirs)
+{
 }
 
-SoundPackRepository:: ~SoundPackRepository() {
+SoundPackRepository:: ~SoundPackRepository()
+{
 }
 
-SoundPack* SoundPackRepository::loadDefault() {
+SoundPack* SoundPackRepository::loadDefault()
+{
     return load(L"cherrymx-black-abs");
 }
 
-SoundPack* SoundPackRepository::load(const wchar_t* name) {
-
+SoundPack* SoundPackRepository::load(const wchar_t* name)
+{
     for (const auto& dir : dirs) {
         std::filesystem::path path = dir / "sound" / name;
         if (std::filesystem::exists(path / "config.json")) {

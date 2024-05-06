@@ -23,6 +23,9 @@ class SoundPack;
 class Application {
 private:
 
+    using Path = std::filesystem::path;
+    using PathSet = std::set<Path>;
+
     const HINSTANCE module;
 
     SoundPackRepository repository;
@@ -39,7 +42,7 @@ private:
 
     void loop();
 
-    std::set<std::filesystem::path> getDirectories(HINSTANCE module);
+    PathSet getDirectories(HINSTANCE module);
 
-    std::filesystem::path getApplicationDirectory(HINSTANCE module);
+    Path getHomeDirectory(HINSTANCE module);
 };
