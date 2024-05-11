@@ -13,28 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "WaveResource.h"
-
-WaveResource::WaveResource(const WAVEFORMATEXTENSIBLE& format, const std::uint8_t* data, std::uint64_t length)
-:   format(format),
-    data(data),
-    length(length) {
-}
-
-WaveResource::~WaveResource() {
-    if (data != nullptr) {
-        delete [] data;
-        data = nullptr;
-    }
-}
-
-SoundClip* WaveResource::slice(int start, int duration) {
-    const auto bytesPerSample = format.Format.nChannels * format.Format.wBitsPerSample / 8;
-    const auto samplesPerSec = format.Format.nSamplesPerSec;
-    std::uint64_t offset = samplesPerSec * start / 1000 * bytesPerSample;
-    std::uint64_t length = samplesPerSec * duration / 1000 * bytesPerSample;
-    return new SoundClip{data + offset, length};
-}
+#include "WaveSoundResourceReader.h"
+#include "SoundResource.h"
 
 static bool fourcc(const BYTE* t, char c1, char c2, char c3, char c4) {
     return t[0] == c1 && t[1] == c2 && t[2] == c3 && t[3] == c4;
@@ -53,29 +33,7 @@ struct RiffChunk : Chunk {
     BYTE fileType[4];
 };
 
-
-class FileWaveResourceReader: public WaveResourceReader {
-private:
-
-    HANDLE file;
-
-public:
-
-    static WaveResourceReader* open(const wchar_t* path);
-
-    virtual ~FileWaveResourceReader();
-
-    virtual WaveResource* read();
-
-private:
-
-    FileWaveResourceReader(HANDLE file);
-
-    bool readRiffHeader(RiffChunk* chunk);
-    WaveResource* readRiffBody(DWORD bodySize);
-};
-
-WaveResourceReader* FileWaveResourceReader::open(const wchar_t* path) {
+SoundResourceReader* WaveResourceReader::open(const wchar_t* path) {
     HANDLE file = ::CreateFileW(
         path,
         GENERIC_READ,
@@ -90,19 +48,19 @@ WaveResourceReader* FileWaveResourceReader::open(const wchar_t* path) {
         return nullptr;
     }
 
-    return new FileWaveResourceReader(file);
+    return new WaveResourceReader(file);
 }
 
-FileWaveResourceReader::FileWaveResourceReader(HANDLE file)
+WaveResourceReader::WaveResourceReader(HANDLE file)
 :   file(file) {
 }
 
-FileWaveResourceReader::~FileWaveResourceReader() {
+WaveResourceReader::~WaveResourceReader() {
     ::CloseHandle(file);
     file = nullptr;
 }
 
-WaveResource* FileWaveResourceReader::read() {
+SoundResource* WaveResourceReader::read() {
 
     RiffChunk chunk{};
 
@@ -113,7 +71,7 @@ WaveResource* FileWaveResourceReader::read() {
     return readRiffBody(chunk.chunkSize - 4);
 }
 
-bool FileWaveResourceReader::readRiffHeader(RiffChunk* chunk) {
+bool WaveResourceReader::readRiffHeader(RiffChunk* chunk) {
 
     DWORD bytesRead = 0;
 
@@ -128,7 +86,7 @@ bool FileWaveResourceReader::readRiffHeader(RiffChunk* chunk) {
     return fourcc(chunk->fileType, 'W', 'A', 'V', 'E');
 }
 
-WaveResource* FileWaveResourceReader::readRiffBody(DWORD bodySize) {
+SoundResource* WaveResourceReader::readRiffBody(DWORD bodySize) {
 
     WAVEFORMATEXTENSIBLE format{};
     BYTE* data = nullptr;
@@ -171,7 +129,12 @@ WaveResource* FileWaveResourceReader::readRiffBody(DWORD bodySize) {
         offset += paddedSize;
 
         if (chunksProcessed >= 2) {
-            return new WaveResource(format, data, dataSize);
+            return new SoundResource(
+                format.Format.nChannels,
+                format.Format.nSamplesPerSec,
+                format.Format.wBitsPerSample,
+                data,
+                dataSize);
         }
     }
 
@@ -182,6 +145,3 @@ WaveResource* FileWaveResourceReader::readRiffBody(DWORD bodySize) {
     return nullptr;
 }
 
-WaveResourceReader* WaveResourceReader::fromFile(const wchar_t* path) {
-    return FileWaveResourceReader::open(path);
-}

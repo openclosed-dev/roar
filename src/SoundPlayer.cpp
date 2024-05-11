@@ -15,6 +15,7 @@
  */
 #include "SoundPlayer.h"
 #include "SoundPack.h"
+#include "SoundResource.h"
 
 class ReusableVoice : public IXAudio2VoiceCallback {
 private:
@@ -160,9 +161,19 @@ ReusableVoice* SoundPlayer::createVoice() {
 
     ReusableVoice* reusable = new ReusableVoice(this);
 
+    auto resource = soundPack->getResource();
+    WAVEFORMATEX format{
+        WAVE_FORMAT_PCM,
+        (WORD) resource->getNumberOfChannels(),
+        (DWORD) resource->getSamplingRate(),
+        (DWORD) resource->getBytesPerSec(),
+        (WORD) resource->getBlockAlign(),
+        (WORD) resource->getBitsPerSample(),
+        0
+    };
+
     IXAudio2SourceVoice* voice = nullptr;
-    HRESULT hr = audio->CreateSourceVoice(
-        &voice, soundPack->getFormat(), 0, XAUDIO2_DEFAULT_FREQ_RATIO, reusable);
+    HRESULT hr = audio->CreateSourceVoice(&voice, &format, 0, XAUDIO2_DEFAULT_FREQ_RATIO, reusable);
     if (FAILED(hr)) {
         delete reusable;
         return nullptr;

@@ -20,7 +20,9 @@ set(sources
     src/SoundPack.cpp
     src/SoundPackRepository.cpp
     src/SoundPlayer.cpp
-    src/WaveResource.cpp
+    src/SoundResource.cpp
+    src/SoundResourceReader.cpp
+    src/WaveSoundResourceReader.cpp
     src/Window.cpp
 )
 

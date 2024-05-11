@@ -13,32 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#include "SoundResourceReader.h"
+#include "WaveSoundResourceReader.h"
 
-#include "SoundClip.h"
-
-class SoundResource;
-
-class SoundPack {
-public:
-
-    using SoundClipMap = std::unordered_map<int, SoundClip*>;
-
-private:
-
-    SoundResource* resource;
-    SoundClipMap* map;
-
-public:
-
-
-    SoundPack(SoundResource* resource, SoundClipMap* map);
-    virtual ~SoundPack();
-
-    SoundResource* getResource() {
-        return resource;
-    }
-
-    SoundClip* getClip(int scanCode);
-};
-
+SoundResourceReader* SoundResourceReader::fromFile(const wchar_t* path) {
+    return WaveResourceReader::open(path);
+}

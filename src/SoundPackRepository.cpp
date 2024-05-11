@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 #include "SoundPackRepository.h"
-#include "WaveResource.h"
+#include "SoundResource.h"
+#include "SoundResourceReader.h"
 #include "SoundPack.h"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
+
+using SoundClipMap = SoundPack::SoundClipMap;
 
 class SoundPackLoader {
 public:
@@ -29,9 +32,9 @@ private:
 
     std::string getSound(json& config);
 
-    WaveResource* loadWaveResource(const fs::path& path);
+    SoundResource* loadWaveResource(const fs::path& path);
 
-    SoundClipMap* buildKeyMap(json& config, WaveResource* resource);
+    SoundClipMap* buildKeyMap(json& config, SoundResource* resource);
 
     SoundClipMap* modifyKeyMap(SoundClipMap& map);
 };
@@ -63,20 +66,19 @@ std::string SoundPackLoader::getSound(json& config)
     return "sound.wav";
 }
 
-WaveResource* SoundPackLoader::loadWaveResource(const fs::path& path)
+SoundResource* SoundPackLoader::loadWaveResource(const fs::path& path)
 {
-    WaveResource* resource = nullptr;
+    SoundResource* resource = nullptr;
 
-    WaveResourceReader* reader = WaveResourceReader::fromFile(path.c_str());
+    auto reader(SoundResourceReader::fromFile(path.c_str()));
     if (reader != nullptr) {
         resource = reader->read();
-        delete reader;
     }
 
     return resource;
 }
 
-SoundClipMap* SoundPackLoader::buildKeyMap(json& config, WaveResource* resource)
+SoundClipMap* SoundPackLoader::buildKeyMap(json& config, SoundResource* resource)
 {
     auto map = new SoundClipMap();
 

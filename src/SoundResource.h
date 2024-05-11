@@ -17,20 +17,44 @@
 
 #include "SoundClip.h"
 
-class WaveResource {
+class SoundResource {
 private:
 
-    WAVEFORMATEXTENSIBLE format;
+    const int numberOfChannels;
+    const int samplingRate;
+    const int bitsPerSample;
     const std::uint8_t* data;
     const std::uint64_t length;
 
 public:
 
-    WaveResource(const WAVEFORMATEXTENSIBLE& format, const std::uint8_t* data, std::uint64_t length);
-    ~WaveResource();
+    SoundResource(
+        int numberOfChannels,
+        int samplingRate,
+        int bitPerSample,
+        const std::uint8_t* data,
+        std::uint64_t length);
 
-    const WAVEFORMATEXTENSIBLE& getFormat() {
-        return format;
+    virtual ~SoundResource();
+
+    int getNumberOfChannels() {
+        return numberOfChannels;
+    }
+
+    int getSamplingRate() {
+        return samplingRate;
+    }
+
+    int getBitsPerSample() {
+        return bitsPerSample;
+    }
+
+    int getBytesPerSec() {
+        return getNumberOfChannels() * getSamplingRate() * getBitsPerSample() / 8;
+    }
+
+    int getBlockAlign() {
+        return getNumberOfChannels() * getBitsPerSample() / 8;
     }
 
     const std::uint8_t* getData() {
@@ -42,13 +66,4 @@ public:
     }
 
     SoundClip* slice(int start, int duration);
-};
-
-class WaveResourceReader {
-public:
-
-    static WaveResourceReader* fromFile(const wchar_t* path);
-
-    virtual ~WaveResourceReader() {};
-    virtual WaveResource* read() = 0;
 };

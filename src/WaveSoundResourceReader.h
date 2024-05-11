@@ -15,30 +15,27 @@
  */
 #pragma once
 
-#include "SoundClip.h"
+#include "SoundResourceReader.h"
 
-class SoundResource;
+class RiffChunk;
 
-class SoundPack {
+class WaveResourceReader: public SoundResourceReader {
+private:
+
+    HANDLE file;
+
 public:
 
-    using SoundClipMap = std::unordered_map<int, SoundClip*>;
+    static SoundResourceReader* open(const wchar_t* path);
+
+    virtual ~WaveResourceReader();
+
+    virtual SoundResource* read();
 
 private:
 
-    SoundResource* resource;
-    SoundClipMap* map;
+    WaveResourceReader(HANDLE file);
 
-public:
-
-
-    SoundPack(SoundResource* resource, SoundClipMap* map);
-    virtual ~SoundPack();
-
-    SoundResource* getResource() {
-        return resource;
-    }
-
-    SoundClip* getClip(int scanCode);
+    bool readRiffHeader(RiffChunk* chunk);
+    SoundResource* readRiffBody(DWORD bodySize);
 };
-

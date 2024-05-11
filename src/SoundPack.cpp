@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 #include "SoundPack.h"
-#include "WaveResource.h"
+#include "SoundResource.h"
 
-SoundPack::SoundPack(WaveResource* resource, SoundClipMap* map)
+SoundPack::SoundPack(SoundResource* resource, SoundClipMap* map)
 :   resource(resource),
     map(map) {
 }
@@ -38,10 +38,6 @@ SoundPack::~SoundPack() {
         delete resource;
         resource = nullptr;
     }
-}
-
-const WAVEFORMATEX* SoundPack::getFormat() {
-    return (WAVEFORMATEX*) &resource->getFormat();
 }
 
 SoundClip* SoundPack::getClip(int scanCode) {

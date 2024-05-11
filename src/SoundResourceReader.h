@@ -15,30 +15,13 @@
  */
 #pragma once
 
-#include "SoundClip.h"
-
 class SoundResource;
 
-class SoundPack {
+class SoundResourceReader {
 public:
 
-    using SoundClipMap = std::unordered_map<int, SoundClip*>;
+    static SoundResourceReader* fromFile(const wchar_t* path);
 
-private:
-
-    SoundResource* resource;
-    SoundClipMap* map;
-
-public:
-
-
-    SoundPack(SoundResource* resource, SoundClipMap* map);
-    virtual ~SoundPack();
-
-    SoundResource* getResource() {
-        return resource;
-    }
-
-    SoundClip* getClip(int scanCode);
+    virtual ~SoundResourceReader() {};
+    virtual SoundResource* read() = 0;
 };
-
