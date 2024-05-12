@@ -39,9 +39,18 @@ SoundResource::~SoundResource()
 
 SoundClip* SoundResource::slice(int start, int duration)
 {
-    const auto bytesPerSample = getNumberOfChannels() * getBitsPerSample() / 8;
-    const auto samplesPerSec = getSamplingRate();
-    std::uint64_t offset = samplesPerSec * start / 1000 * bytesPerSample;
-    std::uint64_t length = samplesPerSec * duration / 1000 * bytesPerSample;
-    return new SoundClip{data + offset, length};
+    const size_t samplePerSec = getSamplingRate();
+    const size_t bytesPerSample = getBitsPerSample() * getNumberOfChannels() / 8L;
+    size_t clipOffset = (samplePerSec * start / 1000) * bytesPerSample;
+    size_t clipLength = (samplePerSec * duration / 1000) * bytesPerSample;
+
+    if (clipOffset >= length) {
+        return nullptr;
+    }
+
+    if (clipOffset + clipLength > length) {
+        clipLength = length - clipOffset;
+    }
+
+    return new SoundClip{data + clipOffset, clipLength};
 }

@@ -19,23 +19,21 @@
 
 class RiffChunk;
 
-class WaveResourceReader: public SoundResourceReader {
+class WaveSoundResourceReader: public SoundResourceReader {
 private:
 
-    HANDLE file;
+    FILE* file;
 
 public:
 
-    static SoundResourceReader* open(const wchar_t* path);
+    WaveSoundResourceReader(FILE* file);
 
-    virtual ~WaveResourceReader();
+    virtual ~WaveSoundResourceReader();
 
     virtual SoundResource* read();
 
 private:
 
-    WaveResourceReader(HANDLE file);
-
     bool readRiffHeader(RiffChunk* chunk);
-    SoundResource* readRiffBody(DWORD bodySize);
+    SoundResource* readRiffBody(long bodySize);
 };

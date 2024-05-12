@@ -14,8 +14,26 @@
  * limitations under the License.
  */
 #include "SoundResourceReader.h"
+#include "OggSoundResourceReader.h"
 #include "WaveSoundResourceReader.h"
 
 SoundResourceReader* SoundResourceReader::fromFile(const wchar_t* path) {
-    return WaveResourceReader::open(path);
+    return fromFile(std::filesystem::path(path));
+}
+
+SoundResourceReader* SoundResourceReader::fromFile(const std::filesystem::path& path) {
+    std::string e = path.extension().string();
+    std::transform(e.begin(), e.end(), e.begin(), ::tolower);
+
+    FILE* file = ::fopen(path.string().c_str(), "rb");
+    if (file != nullptr) {
+        if (e == ".ogg") {
+            return new OggSoundResourceReader(file);
+        } else if (e == ".wav") {
+            return new WaveSoundResourceReader(file);
+        }
+        ::fclose(file);
+    }
+
+    return nullptr;
 }

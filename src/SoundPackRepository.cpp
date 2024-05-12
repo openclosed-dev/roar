@@ -68,14 +68,11 @@ std::string SoundPackLoader::getSound(json& config)
 
 SoundResource* SoundPackLoader::loadWaveResource(const fs::path& path)
 {
-    SoundResource* resource = nullptr;
-
-    auto reader(SoundResourceReader::fromFile(path.c_str()));
-    if (reader != nullptr) {
-        resource = reader->read();
+    std::unique_ptr<SoundResourceReader> reader(SoundResourceReader::fromFile(path.c_str()));
+    if (!reader) {
+        return nullptr;
     }
-
-    return resource;
+    return reader->read();
 }
 
 SoundClipMap* SoundPackLoader::buildKeyMap(json& config, SoundResource* resource)
@@ -97,7 +94,10 @@ SoundClipMap* SoundPackLoader::buildKeyMap(json& config, SoundResource* resource
             if (value.is_array() && value.size() == 2) {
                 int start = value.at(0);
                 int duration = value.at(1);
-                map->insert(std::make_pair(scanCode, resource->slice(start, duration)));
+                auto clip = resource->slice(start, duration);
+                if (clip != nullptr) {
+                   map->insert(std::make_pair(scanCode, clip));
+                }
             }
         } catch (const std::exception& e) {
         }

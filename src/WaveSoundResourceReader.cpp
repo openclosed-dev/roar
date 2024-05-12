@@ -33,35 +33,18 @@ struct RiffChunk : Chunk {
     BYTE fileType[4];
 };
 
-SoundResourceReader* WaveResourceReader::open(const wchar_t* path) {
-    HANDLE file = ::CreateFileW(
-        path,
-        GENERIC_READ,
-        FILE_SHARE_READ,
-        nullptr,
-        OPEN_EXISTING,
-        0,
-        nullptr
-    );
-
-    if (file == INVALID_HANDLE_VALUE) {
-        return nullptr;
-    }
-
-    return new WaveResourceReader(file);
+WaveSoundResourceReader::WaveSoundResourceReader(FILE* file)
+:   file(file)
+{
 }
 
-WaveResourceReader::WaveResourceReader(HANDLE file)
-:   file(file) {
+WaveSoundResourceReader::~WaveSoundResourceReader()
+{
+    ::fclose(file);
 }
 
-WaveResourceReader::~WaveResourceReader() {
-    ::CloseHandle(file);
-    file = nullptr;
-}
-
-SoundResource* WaveResourceReader::read() {
-
+SoundResource* WaveSoundResourceReader::read()
+{
     RiffChunk chunk{};
 
     if (!readRiffHeader(&chunk)) {
@@ -71,11 +54,9 @@ SoundResource* WaveResourceReader::read() {
     return readRiffBody(chunk.chunkSize - 4);
 }
 
-bool WaveResourceReader::readRiffHeader(RiffChunk* chunk) {
-
-    DWORD bytesRead = 0;
-
-    if (!::ReadFile(file, chunk, sizeof(RiffChunk), &bytesRead, nullptr) || bytesRead < sizeof(RiffChunk)) {
+bool WaveSoundResourceReader::readRiffHeader(RiffChunk* chunk)
+{
+    if (::fread(chunk, sizeof(RiffChunk), 1, file) != 1) {
         return false;
     }
 
@@ -86,42 +67,41 @@ bool WaveResourceReader::readRiffHeader(RiffChunk* chunk) {
     return fourcc(chunk->fileType, 'W', 'A', 'V', 'E');
 }
 
-SoundResource* WaveResourceReader::readRiffBody(DWORD bodySize) {
-
+SoundResource* WaveSoundResourceReader::readRiffBody(long bodySize)
+{
     WAVEFORMATEXTENSIBLE format{};
-    BYTE* data = nullptr;
-    DWORD dataSize = 0;
+    std::uint8_t* data = nullptr;
+    std::uint32_t dataSize = 0;
 
     int chunksProcessed = 0;
 
     Chunk chunk{};
 
-    DWORD offset = 0;
-    DWORD bytesRead = 0;
+    long offset = 0;
 
     while (offset < bodySize) {
 
-        if (!::ReadFile(file, &chunk, sizeof(chunk), &bytesRead, nullptr) || bytesRead < sizeof(chunk)) {
+        if (::fread(&chunk, sizeof(chunk), 1, file) != 1) {
             return false;
         }
 
-        offset += bytesRead;
-        DWORD paddedSize = ((chunk.chunkSize + 1) / 2) * 2;
+        offset += sizeof(chunk);
+        long paddedSize = ((chunk.chunkSize + 1) / 2) * 2;
 
         if (chunk.hasType('f', 'm', 't', ' ')) {
-            if (!::ReadFile(file, &format, chunk.chunkSize, &bytesRead, nullptr) || bytesRead < chunk.chunkSize) {
+            if (::fread(&format, chunk.chunkSize, 1, file) != 1) {
                 break;
             }
             chunksProcessed++;
         } else if (chunk.hasType('d', 'a', 't', 'a')) {
-            data = new BYTE[chunk.chunkSize];
+            data = new std::uint8_t[chunk.chunkSize];
             dataSize = chunk.chunkSize;
-            if (!::ReadFile(file, data, dataSize, &bytesRead, nullptr) || bytesRead < dataSize) {
+            if (::fread(data, dataSize, 1, file) != 1) {
                 break;
             }
             chunksProcessed++;
         } else {
-            if (::SetFilePointer(file, paddedSize, nullptr, FILE_CURRENT) == INVALID_SET_FILE_POINTER) {
+            if (::fseek(file, paddedSize, SEEK_CUR) != 0) {
                 break;
             }
         }

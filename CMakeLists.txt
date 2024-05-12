@@ -10,13 +10,28 @@ endif()
 
 include(FetchContent)
 
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
-FetchContent_MakeAvailable(json)
+FetchContent_Declare(json
+    URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+
+FetchContent_Declare(ogg
+    GIT_REPOSITORY https://gitlab.xiph.org/xiph/ogg.git
+    GIT_TAG v1.3.5
+    FIND_PACKAGE_ARGS NAMES Ogg
+)
+
+FetchContent_Declare(vorbis
+    GIT_REPOSITORY https://gitlab.xiph.org/xiph/vorbis.git
+    GIT_TAG v1.3.7
+)
+
+FetchContent_MakeAvailable(json ogg vorbis)
 
 configure_file(src/version.h.in version.h)
 
 set(sources
     src/Application.cpp
+    src/OggSoundResourceReader.cpp
     src/SoundPack.cpp
     src/SoundPackRepository.cpp
     src/SoundPlayer.cpp
@@ -59,10 +74,13 @@ target_link_libraries(roar PRIVATE
     comctl32.lib
     xaudio2.lib
     nlohmann_json::nlohmann_json
+    Ogg::ogg
+    vorbisfile
 )
 
 install(TARGETS roar DESTINATION bin)
-install(FILES README.md LICENSE DESTINATION .)
+install(FILES README.md DESTINATION .)
+install(FILES LICENSE DESTINATION legal/roar)
 install(DIRECTORY sound DESTINATION .)
 install(DIRECTORY legal DESTINATION .)
 

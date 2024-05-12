@@ -15,14 +15,20 @@
  */
 #pragma once
 
-class SoundResource;
+#include "SoundResourceReader.h"
 
-class SoundResourceReader {
+class OggSoundResourceReader: public SoundResourceReader {
+private:
+
+    FILE* file;
+
 public:
 
-    static SoundResourceReader* fromFile(const wchar_t* path);
-    static SoundResourceReader* fromFile(const std::filesystem::path& path);
+    OggSoundResourceReader(FILE* file);
 
-    virtual ~SoundResourceReader() {};
-    virtual SoundResource* read() = 0;
+    virtual ~OggSoundResourceReader();
+
+    virtual SoundResource* read();
+
+private:
 };
